@@ -50,6 +50,7 @@
             tools:text="365만명" />
 
         <ImageView
+            android:id="@+id/icon_live"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:src="@drawable/live"
