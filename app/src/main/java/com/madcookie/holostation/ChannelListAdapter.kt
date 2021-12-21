@@ -18,6 +18,8 @@ class ChannelListAdapter : ListAdapter<Channel, ChannelListAdapter.ViewHolder>(c
 
     class ViewHolder(val binding: ItemChannelBinding) : RecyclerView.ViewHolder(binding.root)
 
+    var isItemClickBlock = false
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(ItemChannelBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
@@ -31,7 +33,7 @@ class ChannelListAdapter : ListAdapter<Channel, ChannelListAdapter.ViewHolder>(c
             it.description.text = "${channel.group.msg} / ${channel.gen.msg}"
 
             it.root.setOnClickListener { v ->
-                if (channel.isLive && channel.videoId.isNotBlank()) {
+                if (!isItemClickBlock && channel.isLive && channel.videoId.isNotBlank()) {
                     goToYoutube(v.context, channel.videoId)
                 }
             }
@@ -51,4 +53,5 @@ class ChannelListAdapter : ListAdapter<Channel, ChannelListAdapter.ViewHolder>(c
             context.startActivity(webIntent)
         }
     }
+
 }

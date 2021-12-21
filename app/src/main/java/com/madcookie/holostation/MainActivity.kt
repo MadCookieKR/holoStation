@@ -39,7 +39,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateChannelList() {
+        binding.swipeRefresh.isEnabled = false
         binding.loading.visibility = View.VISIBLE
+        channelListAdapter.isItemClickBlock = true
+
         lifecycleScope.launch(Dispatchers.IO) {
             for (channel in Repository.channelList) {
                 channel.isLive = Jsoup.connect("https://www.youtube.com/channel/${channel.id}/live")
@@ -54,6 +57,8 @@ class MainActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 channelListAdapter.submitList(Repository.channelList)
                 binding.loading.visibility = View.INVISIBLE
+                binding.swipeRefresh.isEnabled = true
+                channelListAdapter.isItemClickBlock = false
             }
         }
     }
