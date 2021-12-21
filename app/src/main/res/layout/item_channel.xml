@@ -29,16 +29,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            app:layout_constraintBottom_toTopOf="@id/subscriber"
+            app:layout_constraintBottom_toTopOf="@id/description"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintStart_toEndOf="@+id/circleImageView"
             app:layout_constraintTop_toTopOf="parent"
+            android:textColor="@color/black"
             tools:text="가우르 구라" />
 
         <TextView
-            android:id="@+id/subscriber"
+            android:id="@+id/description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -47,7 +48,7 @@
             app:layout_constraintStart_toStartOf="@+id/channel_name"
             app:layout_constraintTop_toBottomOf="@+id/channel_name"
             app:layout_constraintVertical_bias="0.0"
-            tools:text="365만명" />
+            tools:text="EN / Gen1" />
 
         <ImageView
             android:id="@+id/icon_live"

@@ -2,9 +2,11 @@ package com.madcookie.holostation
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.madcookie.holostation.data.Repository
 import com.madcookie.holostation.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
@@ -18,30 +20,45 @@ class MainActivity : AppCompatActivity() {
         DataBindingUtil.setContentView(this, R.layout.activity_main)
     }
 
+    private val channelListAdapter = ChannelListAdapter()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val adapter = ChannelListAdapter()
-        binding.listChannel.adapter = adapter
-        adapter.submitList(Repository.channelList.map { it.copy() })
+        Glide.with(this).load(R.drawable.loading).into(binding.loadingImage)
+        binding.listChannel.adapter = channelListAdapter
+        channelListAdapter.submitList(Repository.channelList.map { it.copy() })
 
-        binding.requestBtn.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO) {
-                for (channel in Repository.channelList) {
-                    channel.isLive = Jsoup.connect("https://www.youtube.com/channel/${channel.id}/live")
-                        .get()
-                        .select("link[rel=canonical]")
-                        .attr("href")
-                        .contains("/watch?v=")
-                    Log.d("monster", channel.toString())
-                }
+        updateChannelList()
 
-                withContext(Dispatchers.Main) {
-                    adapter.submitList(Repository.channelList)
-                }
+        binding.swipeRefresh.setOnRefreshListener {
+            binding.swipeRefresh.isRefreshing = false
+            updateChannelList()
+        }
+    }
+
+    private fun updateChannelList() {
+        binding.loading.visibility = View.VISIBLE
+        lifecycleScope.launch(Dispatchers.IO) {
+            for (channel in Repository.channelList) {
+                channel.isLive = Jsoup.connect("https://www.youtube.com/channel/${channel.id}/live")
+                    .get()
+                    .select("link[rel=canonical]")
+                    .attr("href")
+                    .also { channel.videoId = extractVideoId(it) }
+                    .contains("/watch?v=")
+                Log.d("monster", channel.toString())
+            }
+
+            withContext(Dispatchers.Main) {
+                channelListAdapter.submitList(Repository.channelList)
+                binding.loading.visibility = View.INVISIBLE
             }
         }
+    }
 
+    private fun extractVideoId(href: String): String {
+        return Regex("v=(.*)").find(href)?.groupValues?.getOrNull(1) ?: ""
     }
 }
