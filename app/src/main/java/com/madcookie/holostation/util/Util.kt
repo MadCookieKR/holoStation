@@ -26,3 +26,26 @@ inline fun <reified T : DiffUtilData<T>> createDiffUtil(): DiffUtil.ItemCallback
         }
     }
 }
+
+
+inline fun <reified R> Any?.whatIfNotNullAs(
+    whatIf: (R) -> Unit
+): Any? {
+    return whatIfNotNullAs(
+        whatIf = whatIf,
+        whatIfNot = { }
+    )
+}
+
+inline fun <reified R> Any?.whatIfNotNullAs(
+    whatIf: (R) -> Unit,
+    whatIfNot: () -> Unit
+): Any? {
+
+    if (this != null && this is R) {
+        whatIf(this as R)
+        return this
+    }
+    whatIfNot()
+    return this
+}

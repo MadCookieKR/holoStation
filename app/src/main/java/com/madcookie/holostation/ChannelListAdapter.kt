@@ -26,17 +26,18 @@ class ChannelListAdapter : ListAdapter<Channel, ChannelListAdapter.ViewHolder>(c
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val channel = getItem(position)
-        holder.binding.also {
-            it.channelName.text = channel.name
-            it.iconLive.visibility = if (channel.isLive) View.VISIBLE else View.INVISIBLE
-            it.circleImageView.setImageResource(channel.profileImage)
-            it.description.text = "${channel.group.msg} / ${channel.gen.msg}"
+        holder.binding.also { binding->
+            binding.channelName.text = channel.name
+            binding.iconLive.visibility = if (channel.isLive) View.VISIBLE else View.INVISIBLE
+            binding.circleImageView.setImageResource(channel.profileImage)
+            binding.description.text = "${channel.group.msg} / ${channel.gen.msg}"
 
-            it.root.setOnClickListener { v ->
+            binding.root.setOnClickListener { v ->
                 if (!isItemClickBlock && channel.isLive && channel.videoId.isNotBlank()) {
                     goToYoutube(v.context, channel.videoId)
                 }
             }
+
         }
 
     }
