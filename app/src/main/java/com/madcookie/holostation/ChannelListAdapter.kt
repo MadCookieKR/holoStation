@@ -7,6 +7,7 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.madcookie.holostation.data.Channel
@@ -26,7 +27,7 @@ class ChannelListAdapter : ListAdapter<Channel, ChannelListAdapter.ViewHolder>(c
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val channel = getItem(position)
-        holder.binding.also { binding->
+        holder.binding.also { binding ->
             binding.channelName.text = channel.name
             binding.iconLive.visibility = if (channel.isLive) View.VISIBLE else View.INVISIBLE
             binding.circleImageView.setImageResource(channel.profileImage)
@@ -54,5 +55,32 @@ class ChannelListAdapter : ListAdapter<Channel, ChannelListAdapter.ViewHolder>(c
             context.startActivity(webIntent)
         }
     }
+
+
+    inner class ItemTouchCallback : ItemTouchHelper.Callback() {
+        override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+            return makeMovementFlags(
+                ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+                ItemTouchHelper.START or ItemTouchHelper.END
+            )
+        }
+
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            val removed = currentList.removeAt(viewHolder.adapterPosition)
+            currentList.add(target.adapterPosition, removed)
+            notifyItemMoved(viewHolder.adapterPosition, target.adapterPosition)
+            return true
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            currentList.removeAt(viewHolder.adapterPosition)
+            notifyItemRemoved(viewHolder.adapterPosition)
+        }
+    }
+
 
 }

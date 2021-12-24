@@ -5,7 +5,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.ItemTouchHelper
 import com.madcookie.holostation.data.Repository
 import com.madcookie.holostation.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +29,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.listChannel.adapter = channelListAdapter
         channelListAdapter.submitList(Repository.channelList.map { it.copy() })
+       // ItemTouchHelper(channelListAdapter.ItemTouchCallback()).attachToRecyclerView(binding.listChannel)
+
 
         updateChannelList()
 
@@ -36,6 +38,7 @@ class MainActivity : AppCompatActivity() {
             binding.swipeRefresh.isRefreshing = false
             updateChannelList()
         }
+
 
     }
 

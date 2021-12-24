@@ -1,6 +1,8 @@
 package com.madcookie.holostation.util
 
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 
 
 fun <T> createDefaultDiffUtil(): DiffUtil.ItemCallback<T> {
