@@ -1,5 +1,6 @@
 package com.madcookie.holostation
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -8,7 +9,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.madcookie.holostation.data.Channel
-import com.madcookie.holostation.data.Repository
 import com.madcookie.holostation.databinding.ActivityMainBinding
 import com.madcookie.holostation.util.readObject
 import com.madcookie.holostation.util.toSafe
@@ -36,10 +36,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val channelList = kotlin.runCatching {
-            readObject<List<Channel>>("test")
+            readObject<List<Channel>>(CHANNEL_LIST_OBJECT)
         }.onFailure {
             it.printStackTrace()
-        }.getOrDefault(Repository.channelList.map { it.copy() })
+        }.getOrDefault(emptyList())
 
         binding.listChannel.adapter = channelListAdapter
         channelListAdapter.submitList(channelList)
@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             withContext(Dispatchers.Main) {
-                channelListAdapter.submitList(channelList)
+                channelListAdapter.submitList(channelList.filter { channelListAdapter.currentList.contains(it) })
                 stopLoading()
             }
         }
@@ -90,10 +90,14 @@ class MainActivity : AppCompatActivity() {
         return Regex("v=(.*)").find(href)?.groupValues?.getOrNull(1) ?: ""
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun startLoading() {
         binding.loading.visibility = View.VISIBLE
         binding.swipeRefresh.isEnabled = false
         channelListAdapter.isItemClickBlock = true
+        binding.loading.setOnTouchListener { v, event ->
+            false
+        }
     }
 
 
@@ -114,14 +118,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
+    override fun onStop() {
+        super.onStop()
         kotlin.runCatching {
             channelListAdapter.currentList.forEach { it.isLive = false }
-            writeObject("test", channelListAdapter.currentList)
+            writeObject(CHANNEL_LIST_OBJECT, channelListAdapter.currentList)
         }.onFailure {
             it.printStackTrace()
         }
-        super.onDestroy()
-
     }
+
+    companion object {
+        private const val CHANNEL_LIST_OBJECT = "CHANNEL_LIST_OBJECT"
+    }
+
 }

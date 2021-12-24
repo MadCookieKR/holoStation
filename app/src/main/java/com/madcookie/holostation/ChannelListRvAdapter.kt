@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.madcookie.holostation.data.Channel
+import com.madcookie.holostation.data.Repository
 import com.madcookie.holostation.databinding.ItemAddChannelBinding
 import com.madcookie.holostation.databinding.ItemChannelBinding
 import java.util.*
@@ -51,9 +52,15 @@ class ChannelListRvAdapter(private val channelListRvAdapterListener: ChannelList
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is AddChannelViewHolder -> {
-                holder.binding.root.setOnClickListener {
-                    channelListRvAdapterListener.onClickAddChannel()
+                if(currentList.count() == Repository.channelList.count()){
+                    holder.binding.root.visibility = View.GONE
+                }else{
+                    holder.binding.root.visibility = View.VISIBLE
+                    holder.binding.root.setOnClickListener {
+                        channelListRvAdapterListener.onClickAddChannel()
+                    }
                 }
+
             }
             is ChannelViewHolder -> {
                 val channel = currentList[position]

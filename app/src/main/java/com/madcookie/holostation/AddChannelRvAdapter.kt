@@ -24,6 +24,7 @@ class AddChannelRvAdapter : ListAdapter<Channel, AddChannelRvAdapter.ViewHolder>
         holder.binding.channelName.text = channel.name
         holder.binding.circleImageView.setImageResource(channel.profileImage)
         holder.binding.check.isChecked = selected.contains(channel)
+        holder.binding.description.text = "${channel.group.msg} / ${channel.gen.msg}"
         holder.binding.check.setOnClickListener {
             if (holder.binding.check.isChecked) {
                 selected.add(channel)
