@@ -4,12 +4,12 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.madcookie.holostation.data.Channel
 import com.madcookie.holostation.data.Repository
 import com.madcookie.holostation.databinding.ActivityMainBinding
-import com.madcookie.holostation.util.Logger
 import com.madcookie.holostation.util.readObject
 import com.madcookie.holostation.util.toSafe
 import com.madcookie.holostation.util.writeObject
@@ -22,7 +22,13 @@ class MainActivity : AppCompatActivity() {
         DataBindingUtil.setContentView(this, R.layout.activity_main)
     }
 
-    private val channelListAdapter = ChannelListAdapter()
+    private val channelListAdapter = ChannelListRvAdapter(object : ChannelListRvAdapterListener {
+        override fun onClickAddChannel() {
+            (supportFragmentManager.fragmentFactory.instantiate(classLoader, AddChannelDialog::class.java.name)
+                    as DialogFragment).show(supportFragmentManager, null)
+        }
+
+    })
 
     private var getChannelDataJob: Job? = null
 
@@ -35,12 +41,16 @@ class MainActivity : AppCompatActivity() {
             it.printStackTrace()
         }.getOrDefault(Repository.channelList.map { it.copy() })
 
-        Logger.d("read: $channelList")
-
         binding.listChannel.adapter = channelListAdapter
         channelListAdapter.submitList(channelList)
         ItemTouchHelper(channelListAdapter.ItemTouchCallback()).attachToRecyclerView(binding.listChannel)
 
+        supportFragmentManager.fragmentFactory = AppFragmentFactory(object : AddChannelDialogListener {
+            override fun onConfirm(added: List<Channel>) {
+                channelListAdapter.submitList(channelListAdapter.currentList + added)
+            }
+
+        }, { channelListAdapter.currentList })
 
         updateChannelList()
 
@@ -57,7 +67,8 @@ class MainActivity : AppCompatActivity() {
 
         getChannelDataJob?.cancel()
         getChannelDataJob = lifecycleScope.launch(Dispatchers.IO) {
-            for (channel in channelListAdapter.currentList) {
+            val channelList = channelListAdapter.currentList.map { it.copy() }
+            for (channel in channelList) {
                 yield()
                 channel.isLive = Jsoup.connect("https://www.youtube.com/channel/${channel.id}/live")
                     .get()
@@ -69,7 +80,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             withContext(Dispatchers.Main) {
-                channelListAdapter.submitList(Repository.channelList)
+                channelListAdapter.submitList(channelList)
                 stopLoading()
             }
         }
@@ -93,7 +104,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (getChannelDataJob == null || getChannelDataJob?.isCancelled.toSafe()) {
+        if (getChannelDataJob == null || !getChannelDataJob?.isActive.toSafe()) {
             super.onBackPressed()
         } else {
             lifecycleScope.launch {
@@ -105,8 +116,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         kotlin.runCatching {
+            channelListAdapter.currentList.forEach { it.isLive = false }
             writeObject("test", channelListAdapter.currentList)
-            Logger.d("write: ${channelListAdapter.currentList}")
         }.onFailure {
             it.printStackTrace()
         }
