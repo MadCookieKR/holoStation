@@ -1,8 +1,11 @@
 package com.madcookie.holostation.util
 
+import android.content.Context
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import kotlin.jvm.Throws
 
 
 fun <T> createDefaultDiffUtil(): DiffUtil.ItemCallback<T> {
@@ -50,4 +53,25 @@ inline fun <reified R> Any?.whatIfNotNullAs(
     }
     whatIfNot()
     return this
+}
+
+
+fun Boolean?.toSafe() : Boolean{
+    return this ?: false
+}
+
+@Throws
+ fun Context.writeObject(fileName: String, toWrite: Any) {
+    openFileOutput(fileName, AppCompatActivity.MODE_PRIVATE).use { out ->
+        ObjectOutputStream(out).use {
+            it.writeObject(toWrite)
+        }
+    }
+}
+
+@Throws
+ fun <T> Context.readObject(fileName: String): T {
+    return openFileInput(fileName).use { input ->
+        ObjectInputStream(input).readObject() as T
+    }
 }

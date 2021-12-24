@@ -2,6 +2,7 @@ package com.madcookie.holostation.data
 
 import androidx.annotation.DrawableRes
 import com.madcookie.holostation.util.DiffUtilData
+import java.io.Serializable
 
 enum class Group(val msg: String) {
     EN("EN"), JP("JP")
@@ -27,13 +28,4 @@ data class Channel(
     val gen: Generation,
     @DrawableRes val profileImage: Int,
     var videoId : String = ""
-) : DiffUtilData<Channel> {
-    override fun areItemsTheSame(newItem: Channel): Boolean {
-        return id == newItem.id
-    }
-
-    override fun areContentsTheSame(newItem: Channel): Boolean {
-        return isLive == newItem.isLive
-    }
-
-}
+) : Serializable

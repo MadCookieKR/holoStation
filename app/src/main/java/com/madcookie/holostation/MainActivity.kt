@@ -6,12 +6,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
+import com.madcookie.holostation.data.Channel
 import com.madcookie.holostation.data.Repository
 import com.madcookie.holostation.databinding.ActivityMainBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.madcookie.holostation.util.Logger
+import com.madcookie.holostation.util.readObject
+import com.madcookie.holostation.util.toSafe
+import com.madcookie.holostation.util.writeObject
+import kotlinx.coroutines.*
 import org.jsoup.Jsoup
 
 class MainActivity : AppCompatActivity() {
@@ -27,9 +29,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val channelList = kotlin.runCatching {
+            readObject<List<Channel>>("test")
+        }.onFailure {
+            it.printStackTrace()
+        }.getOrDefault(Repository.channelList.map { it.copy() })
+
+        Logger.d("read: $channelList")
+
         binding.listChannel.adapter = channelListAdapter
-        channelListAdapter.submitList(Repository.channelList.map { it.copy() })
-       // ItemTouchHelper(channelListAdapter.ItemTouchCallback()).attachToRecyclerView(binding.listChannel)
+        channelListAdapter.submitList(channelList)
+        ItemTouchHelper(channelListAdapter.ItemTouchCallback()).attachToRecyclerView(binding.listChannel)
 
 
         updateChannelList()
@@ -47,7 +57,8 @@ class MainActivity : AppCompatActivity() {
 
         getChannelDataJob?.cancel()
         getChannelDataJob = lifecycleScope.launch(Dispatchers.IO) {
-            for (channel in Repository.channelList) {
+            for (channel in channelListAdapter.currentList) {
+                yield()
                 channel.isLive = Jsoup.connect("https://www.youtube.com/channel/${channel.id}/live")
                     .get()
                     .takeIf { !it.toString().contains("LIVE_STREAM_OFFLINE") }
@@ -82,11 +93,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (getChannelDataJob == null) {
+        if (getChannelDataJob == null || getChannelDataJob?.isCancelled.toSafe()) {
             super.onBackPressed()
         } else {
-            getChannelDataJob?.cancel();
-            stopLoading()
+            lifecycleScope.launch {
+                getChannelDataJob?.cancelAndJoin()
+                stopLoading()
+            }
         }
+    }
+
+    override fun onDestroy() {
+        kotlin.runCatching {
+            writeObject("test", channelListAdapter.currentList)
+            Logger.d("write: ${channelListAdapter.currentList}")
+        }.onFailure {
+            it.printStackTrace()
+        }
+        super.onDestroy()
+
     }
 }
