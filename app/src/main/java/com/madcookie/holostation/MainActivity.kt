@@ -33,6 +33,12 @@ class MainActivity : AppCompatActivity() {
     private var getChannelDataJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        supportFragmentManager.fragmentFactory = AppFragmentFactory(object : AddChannelDialogListener {
+            override fun onConfirm(added: List<Channel>) {
+                channelListAdapter.submitList(channelListAdapter.currentList + added)
+            }
+
+        }) { channelListAdapter.currentList }
         super.onCreate(savedInstanceState)
 
         val channelList = kotlin.runCatching {
@@ -45,12 +51,6 @@ class MainActivity : AppCompatActivity() {
         channelListAdapter.submitList(channelList)
         ItemTouchHelper(channelListAdapter.ItemTouchCallback()).attachToRecyclerView(binding.listChannel)
 
-        supportFragmentManager.fragmentFactory = AppFragmentFactory(object : AddChannelDialogListener {
-            override fun onConfirm(added: List<Channel>) {
-                channelListAdapter.submitList(channelListAdapter.currentList + added)
-            }
-
-        }, { channelListAdapter.currentList })
 
         updateChannelList()
 
@@ -121,15 +121,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStop() {
-        super.onStop()
+
+    override fun onDestroy() {
         kotlin.runCatching {
-            channelListAdapter.currentList.forEach { it.isLive = false }
-            writeObject(CHANNEL_LIST_OBJECT, channelListAdapter.currentList)
+            val toSave = channelListAdapter.currentList.map { it.copy() }.onEach { it.isLive = false }
+            writeObject(CHANNEL_LIST_OBJECT, toSave)
         }.onFailure {
             it.printStackTrace()
         }
+        super.onDestroy()
     }
+
 
     companion object {
         private const val CHANNEL_LIST_OBJECT = "CHANNEL_LIST_OBJECT"

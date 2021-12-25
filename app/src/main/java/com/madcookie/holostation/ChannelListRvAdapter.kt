@@ -75,9 +75,8 @@ class ChannelListRvAdapter(private val channelListRvAdapterListener: ChannelList
                         }
                         if (channel.videoId.isBlank()) {
                             goToYoutubeChannel(v.context, channel.id)
-                        } else if (channel.isLive) {
+                        } else if (channel.isLive || channel.videoId.isNotBlank()) {
                             goToYoutubeVideo(v.context, channel.videoId)
-
                         }
                     }
 

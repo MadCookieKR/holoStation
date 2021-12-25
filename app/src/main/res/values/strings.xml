@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">HoloStation</string>
+    <string name="add_new_channel">Add New Channel</string>
 </resources>
