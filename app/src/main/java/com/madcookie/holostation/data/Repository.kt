@@ -40,6 +40,7 @@ object Repository {
         Channel("UCdyqAaZDKHXg4Ahi7VENThQ", "Noel", false, Group.JP, Generation.GEN3, R.drawable.noel),
         Channel("UCCzUftO8KOVkV4wQG1vkUvg", "Marine", false, Group.JP, Generation.GEN3, R.drawable.marin),
         Channel("UCqm3BQLlJfvkTsX_hvm0UmA", "Watame", false, Group.JP, Generation.GEN4, R.drawable.watame),
+        Channel("UCZlDXzGoo7d44bwdNObFacg", "Kanata", false, Group.JP, Generation.GEN4, R.drawable.kanata),
         Channel("UC1uv2Oq6kNxgATlCiez59hw", "Towa", false, Group.JP, Generation.GEN4, R.drawable.towa),
         Channel("UCa9Y57gfeY0Zro_noHRVrnw", "Luna", false, Group.JP, Generation.GEN4, R.drawable.luna),
         Channel("UCFKOVgVbGmX65RxO3EtH3iw", "Lamy", false, Group.JP, Generation.GEN5, R.drawable.lamy),

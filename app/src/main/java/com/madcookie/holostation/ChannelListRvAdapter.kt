@@ -7,7 +7,6 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.madcookie.holostation.data.Channel
@@ -15,8 +14,6 @@ import com.madcookie.holostation.data.Repository
 import com.madcookie.holostation.databinding.ItemAddChannelBinding
 import com.madcookie.holostation.databinding.ItemChannelBinding
 import java.util.*
-import kotlin.math.max
-import kotlin.math.min
 
 interface ChannelListRvAdapterListener {
     fun onClickAddChannel()
@@ -52,12 +49,14 @@ class ChannelListRvAdapter(private val channelListRvAdapterListener: ChannelList
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is AddChannelViewHolder -> {
-                if(currentList.count() == Repository.channelList.count()){
+                if (currentList.count() == Repository.channelList.count()) {
                     holder.binding.root.visibility = View.GONE
-                }else{
+                } else {
                     holder.binding.root.visibility = View.VISIBLE
                     holder.binding.root.setOnClickListener {
-                        channelListRvAdapterListener.onClickAddChannel()
+                        if (!isItemClickBlock) {
+                            channelListRvAdapterListener.onClickAddChannel()
+                        }
                     }
                 }
 
@@ -94,30 +93,8 @@ class ChannelListRvAdapter(private val channelListRvAdapterListener: ChannelList
     }
 
     fun submitList(newChannelList: List<Channel>) {
-        DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-            override fun getOldListSize(): Int {
-                return currentList.size
-            }
-
-            override fun getNewListSize(): Int {
-                return newChannelList.size
-            }
-
-            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                if(min(oldItemPosition, newItemPosition) < 0 || max(oldItemPosition, newItemPosition) >= currentList.count()){
-                    return false
-                }
-                return currentList[oldItemPosition].id == currentList[newItemPosition].id
-            }
-
-            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                if(min(oldItemPosition, newItemPosition) < 0 || max(oldItemPosition, newItemPosition) >= currentList.count()){
-                    return false
-                }
-                return currentList[oldItemPosition].isLive == currentList[newItemPosition].isLive
-            }
-        }).dispatchUpdatesTo(this)
         this.currentList = newChannelList.toMutableList()
+        notifyDataSetChanged()
     }
 
     private fun goToYoutubeVideo(context: Context, videoId: String) {
@@ -166,6 +143,9 @@ class ChannelListRvAdapter(private val channelListRvAdapterListener: ChannelList
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            if (currentList.count() == Repository.channelList.count()) {
+                notifyItemChanged(currentList.count())
+            }
             currentList.removeAt(viewHolder.adapterPosition)
             notifyItemRemoved(viewHolder.adapterPosition)
         }

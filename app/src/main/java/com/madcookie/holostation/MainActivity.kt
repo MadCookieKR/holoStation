@@ -80,7 +80,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             withContext(Dispatchers.Main) {
-                channelListAdapter.submitList(channelList.filter { channelListAdapter.currentList.contains(it) })
+                val toSubmit = channelList.filter { channel ->
+                    channelListAdapter.currentList.map { it.id }.contains(channel.id)
+                }
+                channelListAdapter.submitList(toSubmit)
                 stopLoading()
             }
         }
