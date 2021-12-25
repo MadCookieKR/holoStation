@@ -123,14 +123,10 @@ class ChannelListRvAdapter(private val channelListRvAdapterListener: ChannelList
     }
 
 
-    inner class ItemTouchCallback : ItemTouchHelper.Callback() {
-        override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-            return makeMovementFlags(
-                ItemTouchHelper.UP or ItemTouchHelper.DOWN,
-                ItemTouchHelper.START or ItemTouchHelper.END
-            )
-        }
-
+    inner class ItemTouchCallback : ItemTouchHelper.SimpleCallback(
+        ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+        ItemTouchHelper.START or ItemTouchHelper.END
+    ) {
         override fun onMove(
             recyclerView: RecyclerView,
             viewHolder: RecyclerView.ViewHolder,
@@ -148,6 +144,17 @@ class ChannelListRvAdapter(private val channelListRvAdapterListener: ChannelList
             currentList.removeAt(viewHolder.adapterPosition)
             notifyItemRemoved(viewHolder.adapterPosition)
         }
+
+        override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+            if (viewHolder is AddChannelViewHolder) return 0
+            return super.getSwipeDirs(recyclerView, viewHolder)
+        }
+
+        override fun getDragDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+            if (viewHolder is AddChannelViewHolder) return 0
+            return super.getDragDirs(recyclerView, viewHolder)
+        }
+
     }
 
     companion object {

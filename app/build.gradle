@@ -4,6 +4,11 @@ plugins {
     id 'kotlin-kapt'
 }
 
+def signingKeyPropertiesFile = rootProject.file("local.properties")
+def signingKeyProperties = new Properties()
+signingKeyProperties.load(new FileInputStream(signingKeyPropertiesFile))
+
+
 android {
     compileSdk 31
 
@@ -17,12 +22,25 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        releaseWithSignedKey {
+            storeFile file(signingKeyProperties['SIGNED_STORE_FILE'])
+            storePassword signingKeyProperties['SIGNED_STORE_PASSWORD']
+            keyAlias signingKeyProperties['SIGNED_KEY_ALIAS']
+            keyPassword signingKeyProperties['SIGNED_KEY_PASSWORD']
+        }
+    }
+
+
     buildTypes {
         release {
+            signingConfig signingConfigs.releaseWithSignedKey
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
