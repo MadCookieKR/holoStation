@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">홀로스테이션</string>
+    <string name="app_name_release">홀로스테이션</string>
+    <string name="app_name_debug">홀로스테이션 디버그</string>
     <string name="add_new_channel">채널 추가</string>
 </resources>
