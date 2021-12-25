@@ -121,15 +121,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    override fun onDestroy() {
+    override fun onStop() {
         kotlin.runCatching {
             val toSave = channelListAdapter.currentList.map { it.copy() }.onEach { it.isLive = false }
             writeObject(CHANNEL_LIST_OBJECT, toSave)
         }.onFailure {
             it.printStackTrace()
         }
-        super.onDestroy()
+        super.onStop()
     }
 
 
